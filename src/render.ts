@@ -1,3 +1,5 @@
+import { Particle } from "./particles-ts/Particle";
+
 export const setupCanvas = (
   parent: HTMLElement,
   width: number,
@@ -17,38 +19,65 @@ const drawParticle = (
   y: number,
   radius: number,
   color: number,
-  ctx: CanvasRenderingContext2D
+  m: number,
+  ctx: CanvasRenderingContext2D,
+  canvas: HTMLCanvasElement
 ) => {
   ctx.beginPath();
-  ctx.arc(x, y, radius, 0, Math.PI * 2, false);
-  ctx.fillStyle = `hsl(${color}, 50%, 50%)`; // Assuming color is a hue value in HSL
+  const xScreen = (x * canvas.width) % canvas.width;
+  const yScreen = (y * canvas.height) % canvas.width;
+  ctx.arc(xScreen, yScreen, radius, 0, Math.PI * 2, false);
+  ctx.fillStyle = `hsl(${color * (360 / m)}, 80%, 50%)`; // Assuming color is a hue value in HSL
   ctx.fill();
 };
 
-export const drawPoints = (
+export const drawParticles = (
   ctx: CanvasRenderingContext2D,
   canvas: HTMLCanvasElement,
-  particleArrayLength: number,
-  particles: number[]
+  m: number,
+  particles: Particle[] | number[],
+  particleArrayLength: number = 0
 ) => {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  for (let i = 0; i < particles.length; i += particleArrayLength) {
-    const x = particles[i];
-    const y = particles[i + 1];
-    const radius = particles[i + 2];
-    const color = particles[i + 3];
-    drawParticle(x, y, radius, color, ctx);
+  ctx.fillStyle = "black";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  if (typeof particles[0] === "number") {
+    if (particleArrayLength === 0) {
+      throw new Error("no particle array length");
+    }
+
+    for (let i = 0; i < particles.length; i += particleArrayLength) {
+      const x = particles[i] as number;
+      const y = particles[i + 1] as number;
+      const radius = particles[i + 2] as number;
+      const color = particles[i + 3] as number;
+      drawParticle(x, y, radius, color, m, ctx, canvas);
+    }
+  } else {
+    for (const particle of particles) {
+      const {
+        position: [x, y],
+        radius,
+        color,
+      } = particle as Particle;
+      drawParticle(x, y, radius, color, m, ctx, canvas);
+    }
   }
 };
 
 export const render = (
   ctx: CanvasRenderingContext2D,
   canvas: HTMLCanvasElement,
-  particleArrayLength: number,
-  particles: number[]
+  onRenderFrame: () => void,
+  m: number,
+  particles: Particle[] | number[],
+  particleArrayLength: number = 0
 ) => {
-  drawPoints(ctx, canvas, particleArrayLength, particles);
-  requestAnimationFrame(() =>
-    render(ctx, canvas, particleArrayLength, particles)
-  );
+  drawParticles(ctx, canvas, m, particles, particleArrayLength);
+  onRenderFrame();
+
+  requestAnimationFrame(() => {
+    render(ctx, canvas, onRenderFrame, m, particles, particleArrayLength);
+  });
 };
