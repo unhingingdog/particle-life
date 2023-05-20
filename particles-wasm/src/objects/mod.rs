@@ -1,2 +1,3 @@
-pub mod example_struct;
+pub mod system;
+pub mod particle;
 pub mod types;

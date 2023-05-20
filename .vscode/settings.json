@@ -1,0 +1,4 @@
+{
+  "rust-analyzer.linkedProjects": ["./particles-wasm/Cargo.toml"],
+  "rust-analyzer.showUnlinkedFileNotification": false
+}

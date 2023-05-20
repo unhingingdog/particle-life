@@ -7,7 +7,7 @@
   "scripts": {
     "rsw": "rsw",
     "dev": "concurrently \"rsw watch\" \"vite\"",
-    "build": "sudo rsw build && echo BUILT && sudo tsc && echo COMPILED && vite build",
+    "build": "sudo rsw build && echo BUILT && sudo tsc && echo COMPILED && sudo vite build",
     "preview": "yarn build && vite preview"
   },
   "devDependencies": {

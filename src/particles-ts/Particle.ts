@@ -81,6 +81,6 @@ export class Particle {
   public static initRandom(id: number, m: number): Particle {
     const position = vec2.fromValues(Math.random(), Math.random());
     const color = Particle.generateColor(m, Math.random());
-    return new Particle(position, color, 2, id);
+    return new Particle(position, color, 3, id);
   }
 }

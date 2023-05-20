@@ -1,4 +1,5 @@
 import { Particle } from "./particles-ts/Particle";
+import { WasmParticleDetailFloat, WasmParticleDetailUInt } from "./wasmSetup";
 
 export const setupCanvas = (
   parent: HTMLElement,
@@ -31,53 +32,95 @@ const drawParticle = (
   ctx.fill();
 };
 
-export const drawParticles = (
+export const drawParticlesTs = (
   ctx: CanvasRenderingContext2D,
   canvas: HTMLCanvasElement,
   m: number,
-  particles: Particle[] | number[],
-  particleArrayLength: number = 0
+  particles: Particle[]
 ) => {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = "black";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  if (typeof particles[0] === "number") {
-    if (particleArrayLength === 0) {
-      throw new Error("no particle array length");
-    }
-
-    for (let i = 0; i < particles.length; i += particleArrayLength) {
-      const x = particles[i] as number;
-      const y = particles[i + 1] as number;
-      const radius = particles[i + 2] as number;
-      const color = particles[i + 3] as number;
-      drawParticle(x, y, radius, color, m, ctx, canvas);
-    }
-  } else {
-    for (const particle of particles) {
-      const {
-        position: [x, y],
-        radius,
-        color,
-      } = particle as Particle;
-      drawParticle(x, y, radius, color, m, ctx, canvas);
-    }
+  for (const particle of particles) {
+    const {
+      position: [x, y],
+      radius,
+      color,
+    } = particle as Particle;
+    drawParticle(x, y, radius, color, m, ctx, canvas);
   }
 };
 
-export const render = (
+export const drawParticlesWasm = (
+  ctx: CanvasRenderingContext2D,
+  canvas: HTMLCanvasElement,
+  m: number,
+  particlesFloats: Float32Array,
+  particlesUInts: Uint32Array,
+  particleArrayLength: number,
+  particleSize: number
+) => {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "black";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  for (let i = 0; i < particleArrayLength; i += particleSize) {
+    const x = particlesFloats[i + WasmParticleDetailFloat.x];
+    const y = particlesFloats[i + WasmParticleDetailFloat.y];
+    const radius = particlesFloats[i + WasmParticleDetailFloat.radius];
+    const color = particlesUInts[i + WasmParticleDetailUInt.color];
+
+    drawParticle(x, y, radius, color, m, ctx, canvas);
+  }
+};
+
+export const renderTs = (
   ctx: CanvasRenderingContext2D,
   canvas: HTMLCanvasElement,
   onRenderFrame: () => void,
   m: number,
-  particles: Particle[] | number[],
-  particleArrayLength: number = 0
+  particles: Particle[]
 ) => {
-  drawParticles(ctx, canvas, m, particles, particleArrayLength);
+  drawParticlesTs(ctx, canvas, m, particles as Particle[]);
   onRenderFrame();
 
   requestAnimationFrame(() => {
-    render(ctx, canvas, onRenderFrame, m, particles, particleArrayLength);
+    renderTs(ctx, canvas, onRenderFrame, m, particles);
+  });
+};
+
+export const renderWasm = (
+  ctx: CanvasRenderingContext2D,
+  canvas: HTMLCanvasElement,
+  onRenderFrame: () => void,
+  m: number,
+  particlesFloats: Float32Array,
+  particlesUInts: Uint32Array,
+  particleArraylength: number,
+  particleSize: number
+) => {
+  drawParticlesWasm(
+    ctx,
+    canvas,
+    m,
+    particlesFloats,
+    particlesUInts,
+    particleArraylength,
+    particleSize
+  );
+  onRenderFrame();
+
+  requestAnimationFrame(() => {
+    renderWasm(
+      ctx,
+      canvas,
+      onRenderFrame,
+      m,
+      particlesFloats,
+      particlesUInts,
+      particleArraylength,
+      particleSize
+    );
   });
 };

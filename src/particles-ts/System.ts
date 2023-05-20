@@ -3,10 +3,10 @@ import { Particle } from "./Particle";
 
 glMatrix.setMatrixArrayType(Float32Array);
 
-const defaults = {
+export const defaults = {
   n: 1000,
-  dt: 0.02,
-  frictionHalfLife: 0.04,
+  dt: 0.01,
+  frictionHalfLife: 0.06,
   rMax: 0.1,
   m: 6,
   forceFactor: 1,
@@ -15,7 +15,7 @@ const defaults = {
 const getFrictionFactor = (dt: number, frictionHalfLife: number) =>
   Math.pow(0.5, dt / frictionHalfLife);
 
-interface SystemValuesInit {
+export interface SystemValuesInit {
   count: number;
   dt: number;
   frictionHalfLife: number;
