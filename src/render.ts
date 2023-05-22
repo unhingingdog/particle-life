@@ -85,9 +85,13 @@ export const renderTs = (
   drawParticlesTs(ctx, canvas, m, particles as Particle[]);
   onRenderFrame();
 
-  // requestAnimationFrame(() => {
+  // setTimeout(() => {
   //   renderTs(ctx, canvas, onRenderFrame, m, particles);
-  // });
+  // }, 100);
+
+  requestAnimationFrame(() => {
+    renderTs(ctx, canvas, onRenderFrame, m, particles);
+  });
 };
 
 export const renderWasm = (
@@ -112,7 +116,7 @@ export const renderWasm = (
 
   onRenderFrame();
 
-  // requestAnimationFrame(() => {
+  // setTimeout(() => {
   //   renderWasm(
   //     ctx,
   //     canvas,
@@ -123,5 +127,18 @@ export const renderWasm = (
   //     particleArraylength,
   //     particleSize
   //   );
-  // });
+  // }, 100);
+
+  requestAnimationFrame(() => {
+    renderWasm(
+      ctx,
+      canvas,
+      onRenderFrame,
+      m,
+      particlesFloats,
+      particlesUInts,
+      particleArraylength,
+      particleSize
+    );
+  });
 };

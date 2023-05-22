@@ -4,7 +4,7 @@ use wasm_bindgen::prelude::*;
 use js_sys::Math;
 use web_sys::console;
 
-use na::{Vector2};
+use na::{Vector2, Point2};
 
 use super::particle::{Particle, self};
 
@@ -24,7 +24,7 @@ impl System {
             particles.push(Particle::from_random(id as u32, m))
         }
 
-        Self {
+        let x = Self {
             count,
             dt,
             r_max,
@@ -33,7 +33,13 @@ impl System {
             rule_matrix: RulesMatrix::new(m),
             force_factor,
             particles,
-        }
+        };
+
+		console_log(format!("friction factor: {}", x.friction_factor));
+		console_log(format!("dt: {}", x.dt));
+		console_log(format!("force factor: {}", x.force_factor));
+		console_log(format!("r max: {}", x.r_max));
+		return x;
     }
 
     pub fn apply_forces(&mut self) {
@@ -44,12 +50,12 @@ impl System {
 
             if let Some(particle) = self.particles.get(i) {
 				for j in 0..particles_length {
-					if i != j {
 						if let Some(neighbor) = self.particles.get(j) {
-							let [nx, ny] = neighbor.get_position();
-							let [px, py] = particle.get_position();
-							let rx = nx - px;
-							let ry = ny - py;
+							if particle.get_id() != neighbor.get_id() {
+							let p_position = neighbor.get_position();
+							let n_position = particle.get_position();
+							let rx = n_position.x - p_position.x;
+							let ry = n_position.y - p_position.y;
 
 							let distance = particle.get_distance_to_neighbor(neighbor);
 							// console_log(format!("distance: {}", distance));
@@ -57,37 +63,40 @@ impl System {
 							if distance > 0.0 && distance < self.r_max {
 								let normalized_distance: f32 = distance / self.r_max;
 								let rule_value = self.rule_matrix.get_value(particle.get_color(), neighbor.get_color());
+								// console_log(format!("rule force: {}", rule_value));
+
 								let force = System::get_rule_force(normalized_distance, rule_value);
 								let x_force = (rx / distance) * force;
 								let y_force = (ry / distance) * force;
-								total_force = vec2_add(total_force, [x_force, y_force]);
+								total_force.x += x_force;
+								total_force.y += y_force;
 							}
 						}
 					}
 				}
             }
 
-            if let Some(particle) = self.particles.get_mut(i) {
-				total_force = vec2_scale(total_force, self.force_factor * self.r_max);
-				let time_scaled = vec2_scale(total_force, self.dt);
-				total_force = vec2_add(total_force, time_scaled);
-
+			if let Some(particle) = self.particles.get_mut(i) {
+				total_force *= self.force_factor * self.r_max;
+				total_force += total_force * self.dt;
 				particle.apply_drag(self.friction_factor);
-            	particle.apply_force(total_force) 
-            }
+				particle.apply_force(total_force);
+			}
+			
         }
     }
 
 	fn get_rule_force(normalized_distance: f32, rule_value: &f32) -> f32 {
-		let beta: f32 = 3.0;
+		let beta: f32 = 0.3;
 		if normalized_distance < beta {
 			return normalized_distance / beta - 1.0;
 		} else if beta < normalized_distance && normalized_distance < 1.0 {
-			return rule_value * (2.0 * normalized_distance - 1.0 - beta).abs();
+			return rule_value * (1.0 - ((2.0 * normalized_distance - 1.0 - beta) / (1.0 - beta)).abs());
 		} else {
 			return 0.0;
 		}
 	}
+	
 
     pub fn step(&mut self) {
 		self.apply_forces();

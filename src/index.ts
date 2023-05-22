@@ -23,8 +23,8 @@ initWasm().then(({ System: WasmSystem, wasmMemory }) => {
     CANVAS_HEIGHT_BOUND
   );
 
-  if (false) {
-    const tsSystem = new TSSystem({ count: 10 });
+  if (0) {
+    const tsSystem = new TSSystem({ count: 200, dt: 0.01 });
     renderTs(ctx, canvas, tsSystem.step, tsSystem.m, tsSystem.particles);
   } else {
     const {
@@ -34,7 +34,7 @@ initWasm().then(({ System: WasmSystem, wasmMemory }) => {
       m,
       memoryLength,
       step,
-    } = createWasmSystem({ count: 10 }, WasmSystem, wasmMemory);
+    } = createWasmSystem({ count: 200, dt: 0.01 }, WasmSystem, wasmMemory);
 
     renderWasm(
       ctx,

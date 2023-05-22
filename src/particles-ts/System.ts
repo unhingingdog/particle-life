@@ -60,7 +60,12 @@ export class System {
     this.forceFactor = forceFactor || defaults.forceFactor;
 
     this.frictionFactor = getFrictionFactor(this.dt, this.frictionHalfLife);
+    console.log("friction factor", this.frictionFactor);
     this.ruleMatrix = System.makeRandomRulesMatrix(this.m);
+    console.log(this.ruleMatrix, "size", this.m);
+    console.log("dt", this.dt);
+    console.log("force factor", this.forceFactor);
+    console.log("r max", this.rMax);
 
     this.particles = new Array(this.count)
       .fill(0)
@@ -93,27 +98,23 @@ export class System {
         const rx = neighbor.position[0] - particle.position[0];
         const ry = neighbor.position[1] - particle.position[1];
         const distance = particle.getDistanceToNeighbor(neighbor);
-        console.log("distance", distance);
+        // console.log("distance", distance);
 
         if (distance > 0 && distance < this.rMax) {
-          const f = Particle.getRuleForce(
-            distance / this.rMax,
+          const normalizedDistance = distance / this.rMax;
+          const f = System.getRuleForce(
+            normalizedDistance,
             this.ruleMatrix[particle.color][neighbor.color]
           );
+          // console.log("rule force", f);
           totalForce[0] += (rx / distance) * f;
           totalForce[1] += (ry / distance) * f;
         }
       }
 
       vec2.scale(totalForce, totalForce, this.forceFactor * this.rMax);
-
-      particle.applyDrag(this.frictionFactor);
-
       vec2.scaleAndAdd(totalForce, totalForce, totalForce, this.dt);
-
-      // totalForce[0] += totalForce[0] * this.dt;
-      // totalForce[1] += totalForce[1] * this.dt;
-
+      particle.applyDrag(this.frictionFactor);
       particle.applyForce(totalForce);
     }
   };
@@ -122,6 +123,23 @@ export class System {
     this.applyForces();
     for (const particle of this.particles) {
       particle.move(this.dt);
+    }
+  };
+
+  public static getRuleForce = (
+    normalizedDistance: number,
+    ruleValue: number
+  ): number => {
+    const beta = 0.3;
+    if (normalizedDistance < beta) {
+      return normalizedDistance / beta - 1;
+    } else if (beta < normalizedDistance && normalizedDistance < 1) {
+      return (
+        ruleValue *
+        (1 - Math.abs(2 * normalizedDistance - 1 - beta) / (1 - beta))
+      );
+    } else {
+      return 0;
     }
   };
 

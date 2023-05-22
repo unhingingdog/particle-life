@@ -29,6 +29,7 @@ export class Particle {
   }
 
   public applyForce = (force: vec2) => {
+    // console.log("applying force", `[${force[0]}, ${force[1]}]`);
     vec2.add(this.acceleration, this.acceleration, force);
   };
 
@@ -45,7 +46,6 @@ export class Particle {
     destVec: vec2
   ): vec2 => {
     return vec2.subtract(destVec, otherParticle.position, this.position);
-    vec2.normalize(destVec, destVec);
   };
 
   public move = (dt: number) => {
@@ -53,23 +53,6 @@ export class Particle {
     const timeStepped = vec2.scale(vec2.create(), this.velocity, dt);
     vec2.add(this.position, this.position, timeStepped);
     vec2.set(this.acceleration, 0, 0);
-  };
-
-  public static getRuleForce = (
-    normalizedDistance: number,
-    ruleValue: number
-  ): number => {
-    const beta = 0.3;
-    if (normalizedDistance < beta) {
-      return normalizedDistance / beta - 1;
-    } else if (beta < normalizedDistance && normalizedDistance < 1) {
-      return (
-        ruleValue *
-        (1 - Math.abs(2 * normalizedDistance - 1 - beta) / (1 - beta))
-      );
-    } else {
-      return 0;
-    }
   };
 
   // a float from 0 to 1

@@ -1,14 +1,13 @@
-use std::vec;
-use vecmath::{Vector2, vec2_add, vec2_scale, vec2_sub, vec2_len};
-use wasm_bindgen::prelude::*;
+use na::{Point2, Vector2};
 use js_sys::{ Math };
+use web_sys::console;
 
 impl Particle {
     pub fn new(x: f32, y: f32, radius: f32, color: u32, id: u32) -> Self {
         Self {
-            position: [x, y],
-            velocity: [0.0, 0.0],
-            acceleration: [0.0, 0.0],
+            position: Point2::new(x, y),
+            velocity: Vector2::new(0.0, 0.0),
+            acceleration: Vector2::new(0.0, 0.0),
             radius,
             color,
             id,
@@ -16,27 +15,26 @@ impl Particle {
     }
 
     pub fn move_particle(&mut self, dt: f32) {
-        self.velocity = vec2_add(self.velocity.clone(), self.acceleration);
-        let scaled = vec2_scale(self.velocity.clone(), dt);
-        self.position = vec2_add(self.position.clone(), scaled);
-        self.acceleration = [0.0, 0.0];
+        self.velocity += self.acceleration;
+        self.position += self.velocity * dt;
+        self.acceleration *= 0.0;
     }
 
     pub fn apply_drag(&mut self, drag_factor: f32) {
-        self.velocity = vec2_scale(self.velocity.clone(), drag_factor);
+        self.velocity *= drag_factor;
     }
 
     pub fn get_distance_to_neighbor(&self, neighbor: &Particle) -> f32 {
-        let diff = vec2_sub(self.position.clone(), neighbor.position);
-        vec2_len(diff)
+        (self.position - neighbor.position).norm()
     }
     
 
     pub fn apply_force(&mut self, force: Vector2<f32>) {
-        self.acceleration = vec2_add(self.acceleration.clone(), force);
+        // console_log(format!("applying force: {}", force));
+        self.acceleration += force;
     }
 
-    pub fn get_position(&self) -> Vector2<f32> {
+    pub fn get_position(&self) -> Point2<f32> {
         self.position
     }
 
@@ -65,10 +63,16 @@ impl Particle {
 }
 
 pub struct Particle {
-    position: Vector2<f32>,
+    position: Point2<f32>,
     velocity: Vector2<f32>,
     acceleration: Vector2<f32>,
     radius: f32,
     color: u32,
     id: u32,
+}
+
+
+
+fn console_log(value: String) {
+	console::log_1(&value.into());
 }
