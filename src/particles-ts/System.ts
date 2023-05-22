@@ -71,6 +71,10 @@ export class System {
       .fill(0)
       .map((_, id) => Particle.initRandom(id, this.m));
 
+    // const particle1 = new Particle([0.1, 0.1], 1, 1, 1);
+    // const particle2 = new Particle([0.09, 0.09], 1, 2, 2);
+    // this.particles = [particle1, particle2];
+
     this.workingVec = { vec: vec2.create(), locked: false };
   }
 
@@ -95,25 +99,40 @@ export class System {
 
       for (const neighbor of this.particles) {
         if (particle.id === neighbor.id) continue;
-        const rx = neighbor.position[0] - particle.position[0];
-        const ry = neighbor.position[1] - particle.position[1];
+
+        const pPosition = particle.position;
+        const nPosition = neighbor.position;
+        const rx = nPosition[0] - pPosition[0];
+        const ry = nPosition[1] - pPosition[1];
+
+        // console.log("p position", particle.position[0], particle.position[1]);
+        // console.log("n position", neighbor.position[0], neighbor.position[1]);
+        // console.log("rx", rx);
+        // console.log("ry", ry);
+
         const distance = particle.getDistanceToNeighbor(neighbor);
         // console.log("distance", distance);
 
         if (distance > 0 && distance < this.rMax) {
           const normalizedDistance = distance / this.rMax;
-          const f = System.getRuleForce(
-            normalizedDistance,
-            this.ruleMatrix[particle.color][neighbor.color]
-          );
-          // console.log("rule force", f);
-          totalForce[0] += (rx / distance) * f;
-          totalForce[1] += (ry / distance) * f;
+          // console.log("normalised distance", normalizedDistance);
+          const ruleValue = this.ruleMatrix[particle.color][neighbor.color];
+          // console.log("rule value", ruleValue);
+          // console.log("rule value", ruleValue);
+
+          const force = System.getRuleForce(normalizedDistance, ruleValue);
+          // console.log("rule force", force);
+
+          totalForce[0] += (rx / distance) * force;
+          totalForce[1] += (ry / distance) * force;
         }
       }
 
+      // console.log("total force after rule force", totalForce[0], totalForce[1]);
       vec2.scale(totalForce, totalForce, this.forceFactor * this.rMax);
+      // console.log("total force after scale", totalForce[0], totalForce[1]);
       vec2.scaleAndAdd(totalForce, totalForce, totalForce, this.dt);
+      // console.log("total force after dt scale", totalForce[0], totalForce[1]);
       particle.applyDrag(this.frictionFactor);
       particle.applyForce(totalForce);
     }
@@ -149,6 +168,7 @@ export class System {
       const row = [];
       for (let i = 0; i < m; i++) {
         row.push(Math.random() * 2 - 1);
+        // row.push(0.5);
       }
       rows.push(row);
     }

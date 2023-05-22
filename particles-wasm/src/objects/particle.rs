@@ -25,7 +25,10 @@ impl Particle {
     }
 
     pub fn get_distance_to_neighbor(&self, neighbor: &Particle) -> f32 {
-        (self.position - neighbor.position).norm()
+        // (self.position - neighbor.position).norm()
+        let dx = self.position.x - neighbor.position.x;
+        let dy = self.position.y - neighbor.position.y;
+        (dx*dx + dy*dy).sqrt()
     }
     
 

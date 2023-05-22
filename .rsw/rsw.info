@@ -1,3 +1,3 @@
-[RSW::ERR]
+[RSW::OK]
 [RSW::NAME] :~> particles-wasm
-[RSW::BUILD] :~> wasm-pack build particles-wasm --out-dir pkg --target web --dev
+[RSW::PATH] :~> /Users/gilkih/Documents/repos/wasm-particle-life/particles-wasm/src/objects/particle.rs

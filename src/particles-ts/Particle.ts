@@ -37,15 +37,14 @@ export class Particle {
     vec2.scale(this.velocity, this.velocity, dragFactor);
   };
 
-  public getDistanceToNeighbor = (otherParticle: Particle): number => {
-    return vec2.distance(this.position, otherParticle.position);
-  };
+  // public getDistanceToNeighbor = (otherParticle: Particle): number => {
+  //   return vec2.distance(this.position, otherParticle.position);
+  // };
 
-  public getDirectionToNeighbor = (
-    otherParticle: Particle,
-    destVec: vec2
-  ): vec2 => {
-    return vec2.subtract(destVec, otherParticle.position, this.position);
+  public getDistanceToNeighbor = (otherParticle: Particle): number => {
+    const dx = this.position[0] - otherParticle.position[0];
+    const dy = this.position[1] - otherParticle.position[1];
+    return Math.sqrt(dx * dx + dy * dy);
   };
 
   public move = (dt: number) => {

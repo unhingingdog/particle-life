@@ -5,14 +5,19 @@ export const setupCanvas = (
   parent: HTMLElement,
   width: number,
   height: number
-): [HTMLCanvasElement, CanvasRenderingContext2D] => {
+): [HTMLCanvasElement, CanvasRenderingContext2D, HTMLDivElement] => {
   const canvas = document.createElement("canvas")!;
   canvas.width = width;
   canvas.height = height;
   canvas.style.border = "1px solid black";
   canvas.style.margin = "30px";
   parent.appendChild(canvas);
-  return [canvas, canvas.getContext("2d")!];
+
+  const stats = document.createElement("div");
+  stats.innerHTML = "render time per frame: ";
+  parent.appendChild(stats);
+
+  return [canvas, canvas.getContext("2d")!, stats];
 };
 
 const drawParticle = (
@@ -26,7 +31,7 @@ const drawParticle = (
 ) => {
   ctx.beginPath();
   const xScreen = (x * canvas.width) % canvas.width;
-  const yScreen = (y * canvas.height) % canvas.width;
+  const yScreen = (y * canvas.height) % canvas.height;
   ctx.arc(xScreen, yScreen, radius, 0, Math.PI * 2, false);
   ctx.fillStyle = `hsl(${color * (360 / m)}, 80%, 50%)`; // Assuming color is a hue value in HSL
   ctx.fill();
@@ -78,25 +83,35 @@ export const drawParticlesWasm = (
 export const renderTs = (
   ctx: CanvasRenderingContext2D,
   canvas: HTMLCanvasElement,
+  stats: HTMLDivElement,
   onRenderFrame: () => void,
   m: number,
   particles: Particle[]
 ) => {
+  const drawStart = performance.now();
   drawParticlesTs(ctx, canvas, m, particles as Particle[]);
-  onRenderFrame();
+  const drawTime = performance.now() - drawStart;
 
-  // setTimeout(() => {
-  //   renderTs(ctx, canvas, onRenderFrame, m, particles);
-  // }, 100);
+  const engineStart = performance.now();
+  onRenderFrame();
+  const engineTime = performance.now() - engineStart;
+
+  stats.innerHTML =
+    "render time per frame: " +
+    drawTime +
+    "<br />" +
+    "engine time per frame: " +
+    engineTime;
 
   requestAnimationFrame(() => {
-    renderTs(ctx, canvas, onRenderFrame, m, particles);
+    renderTs(ctx, canvas, stats, onRenderFrame, m, particles);
   });
 };
 
 export const renderWasm = (
   ctx: CanvasRenderingContext2D,
   canvas: HTMLCanvasElement,
+  stats: HTMLDivElement,
   onRenderFrame: () => void,
   m: number,
   particlesFloats: Float32Array,
@@ -104,6 +119,7 @@ export const renderWasm = (
   particleArraylength: number,
   particleSize: number
 ) => {
+  const drawStart = performance.now();
   drawParticlesWasm(
     ctx,
     canvas,
@@ -113,26 +129,24 @@ export const renderWasm = (
     particleArraylength,
     particleSize
   );
+  const drawTime = performance.now() - drawStart;
 
+  const engineStart = performance.now();
   onRenderFrame();
+  const engineTime = performance.now() - engineStart;
 
-  // setTimeout(() => {
-  //   renderWasm(
-  //     ctx,
-  //     canvas,
-  //     onRenderFrame,
-  //     m,
-  //     particlesFloats,
-  //     particlesUInts,
-  //     particleArraylength,
-  //     particleSize
-  //   );
-  // }, 100);
+  stats.innerHTML =
+    "render time per frame: " +
+    drawTime +
+    "<br />" +
+    "engine time per frame: " +
+    engineTime;
 
   requestAnimationFrame(() => {
     renderWasm(
       ctx,
       canvas,
+      stats,
       onRenderFrame,
       m,
       particlesFloats,

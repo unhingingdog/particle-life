@@ -5,7 +5,7 @@
   "author": "Hamish Gilkison <Hamish.Gilkison@airnz.co.nz>",
   "license": "MIT",
   "scripts": {
-    "rsw": "rsw",
+    "rsw": "rsw --release",
     "dev": "concurrently \"rsw watch\" \"vite\"",
     "build": "sudo rsw build && echo BUILT && sudo tsc && echo COMPILED && sudo vite build",
     "preview": "yarn build && vite preview"
