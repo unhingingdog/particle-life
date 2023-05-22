@@ -2,3 +2,4 @@ node_modules/
 dist/
 particles-wasm/target
 particles-wasm/pkg
+rsw.err

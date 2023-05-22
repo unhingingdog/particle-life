@@ -64,7 +64,16 @@ export const createWasmSystem = (
     memoryLength
   );
 
-  return { particlesFloat, particlesUInt, particleSize, m, memoryLength };
+  const step = system.step.bind(system);
+
+  return {
+    particlesFloat,
+    particlesUInt,
+    particleSize,
+    m,
+    memoryLength,
+    step,
+  };
 };
 
 export const initWasm = async () => {

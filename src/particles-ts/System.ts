@@ -93,6 +93,7 @@ export class System {
         const rx = neighbor.position[0] - particle.position[0];
         const ry = neighbor.position[1] - particle.position[1];
         const distance = particle.getDistanceToNeighbor(neighbor);
+        console.log("distance", distance);
 
         if (distance > 0 && distance < this.rMax) {
           const f = Particle.getRuleForce(

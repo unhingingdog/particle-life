@@ -1,6 +1,9 @@
 mod utils;
 pub mod objects;
 
+#[macro_use]
+extern crate nalgebra as na;
+
 use objects::system::System;
 
 use wasm_bindgen::prelude::*;

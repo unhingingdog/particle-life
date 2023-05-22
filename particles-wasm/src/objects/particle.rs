@@ -1,11 +1,9 @@
 use std::vec;
-use vecmath::Vector2;
+use vecmath::{Vector2, vec2_add, vec2_scale, vec2_sub, vec2_len};
 use wasm_bindgen::prelude::*;
-use js_sys::Math;
+use js_sys::{ Math };
 
-#[wasm_bindgen]
 impl Particle {
-    #[wasm_bindgen(constructor)]
     pub fn new(x: f32, y: f32, radius: f32, color: u32, id: u32) -> Self {
         Self {
             position: [x, y],
@@ -15,6 +13,39 @@ impl Particle {
             color,
             id,
         }
+    }
+
+    pub fn move_particle(&mut self, dt: f32) {
+        self.velocity = vec2_add(self.velocity.clone(), self.acceleration);
+        let scaled = vec2_scale(self.velocity.clone(), dt);
+        self.position = vec2_add(self.position.clone(), scaled);
+        self.acceleration = [0.0, 0.0];
+    }
+
+    pub fn apply_drag(&mut self, drag_factor: f32) {
+        self.velocity = vec2_scale(self.velocity.clone(), drag_factor);
+    }
+
+    pub fn get_distance_to_neighbor(&self, neighbor: &Particle) -> f32 {
+        let diff = vec2_sub(self.position.clone(), neighbor.position);
+        vec2_len(diff)
+    }
+    
+
+    pub fn apply_force(&mut self, force: Vector2<f32>) {
+        self.acceleration = vec2_add(self.acceleration.clone(), force);
+    }
+
+    pub fn get_position(&self) -> Vector2<f32> {
+        self.position
+    }
+
+    pub fn get_color(&self) -> u32 {
+        self.color
+    }
+
+    pub fn get_id(&self) -> u32 {
+        self.id
     }
 
     fn generate_color(m: usize, input_value: f32) -> u32 {
@@ -33,7 +64,6 @@ impl Particle {
     }
 }
 
-#[wasm_bindgen]
 pub struct Particle {
     position: Vector2<f32>,
     velocity: Vector2<f32>,

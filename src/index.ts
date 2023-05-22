@@ -23,20 +23,28 @@ initWasm().then(({ System: WasmSystem, wasmMemory }) => {
     CANVAS_HEIGHT_BOUND
   );
 
-  const tsSystem = new TSSystem({ count: 1000 });
-  const { particleSize, particlesFloat, particlesUInt, m, memoryLength } =
-    createWasmSystem({}, WasmSystem, wasmMemory);
+  if (false) {
+    const tsSystem = new TSSystem({ count: 10 });
+    renderTs(ctx, canvas, tsSystem.step, tsSystem.m, tsSystem.particles);
+  } else {
+    const {
+      particleSize,
+      particlesFloat,
+      particlesUInt,
+      m,
+      memoryLength,
+      step,
+    } = createWasmSystem({ count: 10 }, WasmSystem, wasmMemory);
 
-  renderWasm(
-    ctx,
-    canvas,
-    () => console.log("stepped"),
-    m,
-    particlesFloat,
-    particlesUInt,
-    memoryLength,
-    particleSize
-  );
-
-  // renderTs(ctx, canvas, tsSystem.step, tsSystem.m, tsSystem.particles);
+    renderWasm(
+      ctx,
+      canvas,
+      step,
+      m,
+      particlesFloat,
+      particlesUInt,
+      memoryLength,
+      particleSize
+    );
+  }
 });
