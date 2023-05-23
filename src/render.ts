@@ -4,17 +4,22 @@ import { WasmParticleDetailFloat, WasmParticleDetailUInt } from "./wasmSetup";
 export const setupCanvas = (
   parent: HTMLElement,
   width: number,
-  height: number
+  height: number,
+  button: HTMLButtonElement,
+  title: HTMLElement
 ): [HTMLCanvasElement, CanvasRenderingContext2D, HTMLDivElement] => {
   const canvas = document.createElement("canvas")!;
   canvas.width = width;
   canvas.height = height;
   canvas.style.border = "1px solid black";
   canvas.style.margin = "30px";
-  parent.appendChild(canvas);
 
   const stats = document.createElement("div");
   stats.innerHTML = "render time per frame: ";
+
+  parent.appendChild(canvas);
+  parent.appendChild(title);
+  parent.appendChild(button);
   parent.appendChild(stats);
 
   return [canvas, canvas.getContext("2d")!, stats];
@@ -80,13 +85,18 @@ export const drawParticlesWasm = (
   }
 };
 
+interface RunningFlag {
+  running: boolean;
+}
+
 export const renderTs = (
   ctx: CanvasRenderingContext2D,
   canvas: HTMLCanvasElement,
   stats: HTMLDivElement,
   onRenderFrame: () => void,
   m: number,
-  particles: Particle[]
+  particles: Particle[],
+  running: RunningFlag
 ) => {
   const drawStart = performance.now();
   drawParticlesTs(ctx, canvas, m, particles as Particle[]);
@@ -97,15 +107,17 @@ export const renderTs = (
   const engineTime = performance.now() - engineStart;
 
   stats.innerHTML =
-    "render time per frame: " +
+    "render time per frame (ms): " +
     drawTime +
     "<br />" +
-    "engine time per frame: " +
+    "processing time per step (ms): " +
     engineTime;
 
-  requestAnimationFrame(() => {
-    renderTs(ctx, canvas, stats, onRenderFrame, m, particles);
-  });
+  if (running.running) {
+    requestAnimationFrame(() => {
+      renderTs(ctx, canvas, stats, onRenderFrame, m, particles, running);
+    });
+  }
 };
 
 export const renderWasm = (
@@ -117,7 +129,8 @@ export const renderWasm = (
   particlesFloats: Float32Array,
   particlesUInts: Uint32Array,
   particleArraylength: number,
-  particleSize: number
+  particleSize: number,
+  running: RunningFlag
 ) => {
   const drawStart = performance.now();
   drawParticlesWasm(
@@ -136,23 +149,26 @@ export const renderWasm = (
   const engineTime = performance.now() - engineStart;
 
   stats.innerHTML =
-    "render time per frame: " +
+    "render time per frame (ms): " +
     drawTime +
     "<br />" +
-    "engine time per frame: " +
+    "processing time per step (ms): " +
     engineTime;
 
-  requestAnimationFrame(() => {
-    renderWasm(
-      ctx,
-      canvas,
-      stats,
-      onRenderFrame,
-      m,
-      particlesFloats,
-      particlesUInts,
-      particleArraylength,
-      particleSize
-    );
-  });
+  if (running.running) {
+    requestAnimationFrame(() => {
+      renderWasm(
+        ctx,
+        canvas,
+        stats,
+        onRenderFrame,
+        m,
+        particlesFloats,
+        particlesUInts,
+        particleArraylength,
+        particleSize,
+        running
+      );
+    });
+  }
 };

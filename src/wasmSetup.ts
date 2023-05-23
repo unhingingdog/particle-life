@@ -65,6 +65,8 @@ export const createWasmSystem = (
   );
 
   const step = system.step.bind(system);
+  const start = system.start.bind(system);
+  const pause = system.pause.bind(system);
 
   return {
     particlesFloat,
@@ -73,6 +75,8 @@ export const createWasmSystem = (
     m,
     memoryLength,
     step,
+    start,
+    pause,
   };
 };
 
